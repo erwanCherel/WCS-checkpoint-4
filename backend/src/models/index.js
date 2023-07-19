@@ -34,6 +34,21 @@ const ItemManager = require("./ItemManager");
 models.item = new ItemManager();
 models.item.setDatabase(pool);
 
+const UserManager = require("./UserManager");
+
+models.user = new UserManager();
+models.user.setDatabase(pool);
+
+const MessageManager = require("./MessageManager");
+
+models.message = new MessageManager();
+models.message.setDatabase(pool);
+
+const ConversationManager = require("./ConversationManager");
+
+models.conversation = new ConversationManager();
+models.conversation.setDatabase(pool);
+
 // bonus: use a proxy to personalize error message,
 // when asking for a non existing model
 
