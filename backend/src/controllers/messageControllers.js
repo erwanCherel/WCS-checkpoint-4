@@ -82,10 +82,27 @@ const destroy = (req, res) => {
     });
 };
 
+const getMessagesConversation = (req, res) => {
+  models.message
+    .findAllMessages(req.params.id)
+    .then(([rows]) => {
+      if (rows[0] == null) {
+        res.sendStatus(404);
+      } else {
+        res.send(rows);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
+
 module.exports = {
   browse,
   read,
   edit,
   add,
   destroy,
+  getMessagesConversation,
 };

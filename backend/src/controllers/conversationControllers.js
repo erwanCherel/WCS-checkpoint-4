@@ -19,7 +19,23 @@ const read = (req, res) => {
       if (rows[0] == null) {
         res.sendStatus(404);
       } else {
-        res.send(rows[0]);
+        res.send(rows);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
+
+const findConversations = (req, res) => {
+  models.conversation
+    .findConversations(req.params.id)
+    .then(([rows]) => {
+      if (rows[0] == null) {
+        res.sendStatus(404);
+      } else {
+        res.send(rows);
       }
     })
     .catch((err) => {
@@ -88,4 +104,5 @@ module.exports = {
   edit,
   add,
   destroy,
+  findConversations,
 };

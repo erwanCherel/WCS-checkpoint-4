@@ -1,4 +1,12 @@
+const argon2 = require("@node-rs/argon2");
 const models = require("../models");
+
+const hashingOptions = {
+  type: argon2.argon2id,
+  memoryCost: 2 ** 16,
+  timeCost: 5,
+  parallelism: 1,
+};
 
 const browse = (req, res) => {
   models.user
@@ -52,13 +60,14 @@ const edit = (req, res) => {
 
 const add = (req, res) => {
   const user = req.body;
-
-  // TODO validations (length, format...)
-
   models.user
     .insert(user)
     .then(([result]) => {
-      res.location(`/users/${result.insertId}`).sendStatus(201);
+      delete user.hashedPassword;
+      res.status(201).json({
+        id: result.insertId,
+        ...user,
+      });
     })
     .catch((err) => {
       console.error(err);
@@ -82,10 +91,93 @@ const destroy = (req, res) => {
     });
 };
 
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+  models.user
+    .findByEmail(email)
+    .then(([users]) => {
+      if (users.length === 0) {
+        res.sendStatus(404);
+      } else if (!argon2.verifySync(users[0].hashedPassword, password)) {
+        res.sendStatus(404);
+      } else {
+        const user = { ...users[0] };
+        delete user.hashedPassword;
+
+        req.body = user;
+        next();
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
+
+const autoLogin = (req, res) => {
+  const { id } = req.body;
+
+  models.user
+    .findOneUser(id)
+    .then(([users]) => {
+      if (users.length === 0) {
+        res.sendStatus(404);
+      } else {
+        const user = { ...users[0] };
+        res.json(user);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
+
+const hashPassword = (req, res, next) => {
+  const { password } = req.body;
+  if (!password) {
+    res.sendStatus(400);
+  } else {
+    argon2
+      .hash(password, hashingOptions)
+      .then((hashedPassword) => {
+        req.body.hashedPassword = hashedPassword;
+        delete req.body.password;
+        next();
+      })
+      .catch((err) => {
+        console.error(err);
+        res.sendStatus(500);
+      });
+  }
+};
+
+const checkEmail = (req, res, next) => {
+  const { email } = req.body;
+
+  models.user
+    .findByEmail(email)
+    .then(([result]) => {
+      if (result.length === 0) {
+        next();
+      } else {
+        res.sendStatus(401);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
+
 module.exports = {
   browse,
   read,
   edit,
   add,
   destroy,
+  login,
+  autoLogin,
+  checkEmail,
+  hashPassword,
 };
