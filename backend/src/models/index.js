@@ -49,6 +49,11 @@ const ConversationManager = require("./ConversationManager");
 models.conversation = new ConversationManager();
 models.conversation.setDatabase(pool);
 
+const UserConversationManager = require("./UserConversationManager");
+
+models.userConversation = new UserConversationManager();
+models.userConversation.setDatabase(pool);
+
 // bonus: use a proxy to personalize error message,
 // when asking for a non existing model
 

@@ -1,7 +1,8 @@
+/* eslint-disable camelcase */
 const models = require("../models");
 
 const browse = (req, res) => {
-  models.message
+  models.userConversation
     .findAll()
     .then(([rows]) => {
       res.send(rows);
@@ -13,7 +14,7 @@ const browse = (req, res) => {
 };
 
 const read = (req, res) => {
-  models.message
+  models.userConversation
     .find(req.params.id)
     .then(([rows]) => {
       if (rows[0] == null) {
@@ -29,14 +30,14 @@ const read = (req, res) => {
 };
 
 const edit = (req, res) => {
-  const message = req.body;
+  const userConversation = req.body;
 
   // TODO validations (length, format...)
 
-  message.id = parseInt(req.params.id, 10);
+  userConversation.id = parseInt(req.params.id, 10);
 
-  models.message
-    .update(message)
+  models.userConversation
+    .update(userConversation)
     .then(([result]) => {
       if (result.affectedRows === 0) {
         res.sendStatus(404);
@@ -50,24 +51,8 @@ const edit = (req, res) => {
     });
 };
 
-const add = (req, res) => {
-  const message = req.body;
-
-  // TODO validations (length, format...)
-
-  models.message
-    .insert(message)
-    .then(([result]) => {
-      res.location(`/messages/${result.insertId}`).sendStatus(201);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.sendStatus(500);
-    });
-};
-
 const destroy = (req, res) => {
-  models.message
+  models.userConversation
     .delete(req.params.id)
     .then(([result]) => {
       if (result.affectedRows === 0) {
@@ -82,15 +67,21 @@ const destroy = (req, res) => {
     });
 };
 
-const getMessagesConversation = (req, res) => {
-  models.message
-    .findAllMessages(req.params.id)
-    .then(([rows]) => {
-      if (rows[0] == null) {
-        res.sendStatus(404);
-      } else {
-        res.send(rows);
-      }
+const add = (req, res) => {
+  const { user1_id, user2_id, insertId } = req.body;
+
+  models.userConversation
+    .insert({ user_id: user1_id, conversation_id: insertId })
+    .then(() => {
+      models.userConversation
+        .insert({ user_id: user2_id, conversation_id: insertId })
+        .then(() => {
+          res.sendStatus(201);
+        })
+        .catch((err) => {
+          console.error(err);
+          res.sendStatus(500);
+        });
     })
     .catch((err) => {
       console.error(err);
@@ -104,5 +95,4 @@ module.exports = {
   edit,
   add,
   destroy,
-  getMessagesConversation,
 };

@@ -19,7 +19,23 @@ const read = (req, res) => {
       if (rows[0] == null) {
         res.sendStatus(404);
       } else {
-        res.send(rows[0]);
+        res.send(rows);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
+
+const findConversations = (req, res) => {
+  models.conversation
+    .findConversations(req.params.id)
+    .then(([rows]) => {
+      if (rows[0] == null) {
+        res.sendStatus(404);
+      } else {
+        res.send(rows);
       }
     })
     .catch((err) => {
@@ -50,7 +66,7 @@ const edit = (req, res) => {
     });
 };
 
-const add = (req, res) => {
+const add = (req, res, next) => {
   const conversation = req.body;
 
   // TODO validations (length, format...)
@@ -58,7 +74,9 @@ const add = (req, res) => {
   models.conversation
     .insert(conversation)
     .then(([result]) => {
-      res.location(`/conversations/${result.insertId}`).sendStatus(201);
+      // res.location(`/conversations/${result.insertId}`).sendStatus(201);
+      req.body = { ...conversation, ...result };
+      next();
     })
     .catch((err) => {
       console.error(err);
@@ -82,10 +100,29 @@ const destroy = (req, res) => {
     });
 };
 
+const getConvWithUserInfos = (req, res) => {
+  const infos = req.body;
+  models.conversation
+    .readConvUserInfos(infos)
+    .then(([rows]) => {
+      if (rows[0] == null) {
+        res.sendStatus(404);
+      } else {
+        res.send(rows);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.sendStatus(500);
+    });
+};
+
 module.exports = {
   browse,
   read,
   edit,
   add,
   destroy,
+  findConversations,
+  getConvWithUserInfos,
 };
