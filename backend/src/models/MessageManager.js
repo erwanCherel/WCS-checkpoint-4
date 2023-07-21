@@ -11,6 +11,18 @@ class MessageManager extends AbstractManager {
       [id]
     );
   }
+
+  insert(message) {
+    return this.database.query(
+      `insert into ${this.table} (content, sender_id, recipient_id, conversation_id) value (?, ?, ?, ?)`,
+      [
+        message.content,
+        message.sender_id,
+        message.recipient_id,
+        message.conversation_id,
+      ]
+    );
+  }
 }
 
 module.exports = MessageManager;

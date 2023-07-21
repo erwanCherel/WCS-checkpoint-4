@@ -8,7 +8,10 @@ const conversationControllers = require("../controllers/conversationControllers"
 router.get("/", userControllers.browse);
 router.get("/:id", userControllers.read);
 router.get("/:id/conversations", conversationControllers.findConversations);
-
+// router.get(
+//   "/:id/conversationsWithUserInformations",
+//   conversationControllers.getConvWithUserInfos
+// );
 // PUT
 router.put("/:id", userControllers.edit);
 

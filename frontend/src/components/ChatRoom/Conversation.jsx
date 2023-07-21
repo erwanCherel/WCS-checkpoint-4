@@ -1,11 +1,21 @@
 import { Avatar, Flex, Text } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import PropTypes from "prop-types";
 import { useUserContext } from "../../contexts/UserContext";
 
-export default function Conversation({ conversationUser }) {
+export default function Conversation({
+  conversationUser,
+  conversationOtherUser,
+  setSocket,
+  socketClient,
+}) {
   const [messages, setMessages] = useState();
   const { user } = useUserContext();
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+  };
 
   const getMessages = () => {
     if (conversationUser) {
@@ -17,22 +27,40 @@ export default function Conversation({ conversationUser }) {
         .then((resp) => resp.json())
         .then((data) => {
           setMessages(data);
-          console.info(data);
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          console.error(err);
+          setMessages([]);
+        });
     }
   };
 
   useEffect(() => {
     getMessages();
+
+    socketClient.on("updateMessages", () => {
+      getMessages();
+    });
+
+    setSocket(socketClient);
   }, [conversationUser]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   return (
     <Flex flex="1">
       {messages ? (
-        <Flex flexDir="column" flex="1">
+        <Flex
+          flexDir="column"
+          overflowY="scroll"
+          flex="1"
+          maxH="80vh"
+          className="conversation"
+        >
           {messages.map((message) =>
-            message.user_id === user.id ? (
+            message.sender_id === user.id ? (
               <Flex
                 p="2rem 3rem"
                 key={message.id}
@@ -47,8 +75,9 @@ export default function Conversation({ conversationUser }) {
                   <Text bg="element.pink" p="1rem 1.5rem" borderRadius="100px">
                     {message.content}
                   </Text>
+                  <Flex ref={messagesEndRef} />
                 </Flex>
-                <Avatar />
+                <Avatar src={user.picture} />
               </Flex>
             ) : (
               <Flex
@@ -57,9 +86,12 @@ export default function Conversation({ conversationUser }) {
                 alignItems="center"
                 gap="2rem"
               >
-                <Avatar />
+                <Avatar src={conversationOtherUser.picture} />
                 <Flex flexDir="column">
-                  <Flex ml="1rem">moi</Flex>
+                  <Flex ml="1rem">
+                    {conversationOtherUser.firstname}{" "}
+                    {conversationOtherUser.lastname}
+                  </Flex>
                   <Text bg="element.gray" p="1rem 1.5rem" borderRadius="100px">
                     {message.content}
                   </Text>
@@ -80,8 +112,18 @@ Conversation.propTypes = {
     user1_id: PropTypes.number,
     user2_id: PropTypes.number,
   }),
+  conversationOtherUser: PropTypes.shape({
+    email: PropTypes.string,
+    firstname: PropTypes.string,
+    id: PropTypes.number,
+    lastname: PropTypes.string,
+    picture: PropTypes.string,
+  }),
+  setSocket: PropTypes.func.isRequired,
+  socketClient: PropTypes.func.isRequired,
 };
 
 Conversation.defaultProps = {
   conversationUser: null,
+  conversationOtherUser: null,
 };

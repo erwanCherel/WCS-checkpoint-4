@@ -66,6 +66,14 @@ export default function Login({ setIsRegistered }) {
         })
         .catch((err) => {
           console.error("error: ", err);
+          toast({
+            title: "Erreur.",
+            description: "Vérifiez vos identifiants",
+            status: "error",
+            duration: 2000,
+            isClosable: true,
+            position: "bottom-right",
+          });
         });
     }
   };

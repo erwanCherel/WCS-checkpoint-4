@@ -1,3 +1,26 @@
 body {
   margin: 0;
 }
+
+.conversation,
+.sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent var(--primary);
+}
+
+.conversation::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar {
+  width: 0px;
+}
+
+.conversation::-webkit-scrollbar-track,
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.conversation::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 0;
+  border: none;
+}

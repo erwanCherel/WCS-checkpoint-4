@@ -9,15 +9,34 @@ const hashingOptions = {
 };
 
 const browse = (req, res) => {
-  models.user
-    .findAll()
-    .then(([rows]) => {
-      res.send(rows);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.sendStatus(500);
-    });
+  // const { firstname } = req.query;
+  let sql = "SELECT id, firstname, lastname, email FROM user";
+  const sqlValues = [];
+
+  if (req.query.firstname != null) {
+    sql += " where firstname = ?";
+    sqlValues.push(req.query.firstname);
+
+    models.user
+      .findByFirstName(sql, sqlValues)
+      .then(([rows]) => {
+        res.send(rows);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.sendStatus(500);
+      });
+  } else {
+    models.user
+      .findByFirstName(sql, sqlValues)
+      .then(([rows]) => {
+        res.send(rows);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.sendStatus(500);
+      });
+  }
 };
 
 const read = (req, res) => {

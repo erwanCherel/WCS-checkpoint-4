@@ -76,9 +76,9 @@ export default function Signin({ setIsRegistered }) {
             isClosable: true,
             position: "bottom-right",
           });
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
+          // setTimeout(() => {
+          //   window.location.reload();
+          // }, 1000);
         })
         .catch((err) => {
           console.info(err);
